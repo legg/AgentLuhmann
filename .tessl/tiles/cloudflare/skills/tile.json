@@ -1,0 +1,22 @@
+{
+  "name": "cloudflare/skills",
+  "version": "7c449def4e0c63daa27212d853094e4c8e37bbe8",
+  "summary": "Auto-generated tile from GitHub (8 skills)",
+  "private": true,
+  "skills": {
+    "agents-sdk": {
+      "path": "skills/agents-sdk/SKILL.md"
+    }
+  },
+  "excludes": {
+    "skills": [
+      "cloudflare",
+      "cloudflare-email-service",
+      "durable-objects",
+      "sandbox-sdk",
+      "web-perf",
+      "workers-best-practices",
+      "wrangler"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "gapmiss/obsidian-plugin-skill",
+  "version": "76eddac654fc40009e22c4f53380b5725125e67d",
+  "summary": "Auto-generated tile from GitHub (1 skill)",
+  "private": true,
+  "skills": {
+    "obsidian": {
+      "path": ".agents/skills/obsidian/SKILL.md"
+    }
+  }
+}

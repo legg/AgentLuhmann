@@ -1,0 +1,24 @@
+{
+  "name": "AgentLuhmann",
+  "mode": "vendored",
+  "dependencies": {
+    "cloudflare/skills": {
+      "version": "7c449def4e0c63daa27212d853094e4c8e37bbe8",
+      "source": "https://github.com/cloudflare/skills",
+      "include": {
+        "skills": [
+          "agents-sdk"
+        ]
+      }
+    },
+    "gapmiss/obsidian-plugin-skill": {
+      "version": "76eddac654fc40009e22c4f53380b5725125e67d",
+      "source": "https://github.com/gapmiss/obsidian-plugin-skill",
+      "include": {
+        "skills": [
+          "obsidian"
+        ]
+      }
+    }
+  }
+}
