@@ -63,7 +63,7 @@ export default class AgentLuhmannPlugin extends Plugin {
 		}
 	}
 
-	openAuthModal(): void {
-		new AuthModal(this.app, this).open();
+	openAuthModal(onSuccess?: () => void): void {
+		new AuthModal(this.app, this, onSuccess).open();
 	}
 }

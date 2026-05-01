@@ -8,10 +8,12 @@ export class AuthModal extends Modal {
 	plugin: AgentLuhmannPlugin;
 	currentTab: AuthTab = "sign-in";
 	formContainer: HTMLDivElement | null = null;
+	private onSuccess: (() => void) | undefined;
 
-	constructor(app: App, plugin: AgentLuhmannPlugin) {
+	constructor(app: App, plugin: AgentLuhmannPlugin, onSuccess?: () => void) {
 		super(app);
 		this.plugin = plugin;
+		this.onSuccess = onSuccess;
 	}
 
 	onOpen(): void {
@@ -194,6 +196,7 @@ export class AuthModal extends Modal {
 
 			new Notice("Authenticated successfully");
 			this.close();
+			this.onSuccess?.();
 		} catch (error) {
 			new Notice(error instanceof Error ? error.message : "Sign-in failed");
 		}
@@ -217,6 +220,7 @@ export class AuthModal extends Modal {
 
 			new Notice("Account created and authenticated successfully");
 			this.close();
+			this.onSuccess?.();
 		} catch (error) {
 			new Notice(error instanceof Error ? error.message : "Sign-up failed");
 		}

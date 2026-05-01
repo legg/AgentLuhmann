@@ -197,7 +197,7 @@ export class AgentLuhmannSettingTab extends PluginSettingTab {
 						this.plugin.saveSettings();
 						this.display();
 					} else {
-						this.plugin.openAuthModal();
+						this.plugin.openAuthModal(() => this.display());
 					}
 				}));
 	}
