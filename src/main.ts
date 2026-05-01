@@ -38,7 +38,7 @@ export default class AgentLuhmannPlugin extends Plugin {
 		);
 
 		registerCaptureCommands(this, this.processor);
-		registerCaptureEvents(this, this.processor, this.settings.autoPromptOnOpen);
+		registerCaptureEvents(this, this.processor);
 
 		this.addSettingTab(new AgentLuhmannSettingTab(this.app, this));
 	}

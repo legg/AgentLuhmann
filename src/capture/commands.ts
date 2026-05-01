@@ -1,18 +1,82 @@
-import {App, FuzzySuggestModal, Notice, Plugin, TFile} from "obsidian";
+import {App, FuzzySuggestModal, Notice, TFile} from "obsidian";
 import {CaptureProcessor} from "./processor";
 import {CaptureModal} from "./capture-modal";
 import {SurpriseRatingModal} from "./surprise-modal";
+import {AiFirstPassModal} from "./ai-first-pass-modal";
 import {isInInbox} from "../utils/paths";
 import {AuthModal} from "../ui/auth-modal";
 import AgentLuhmannPlugin from "../main";
 import {syncVectorStore} from "../vector-store/sync";
 import {getAiStatus} from "./ai-status";
+import {CaptureResponse} from "../api/types";
+
+/**
+ * Opens the AI first pass modal if AI data is available (from frontmatter or fresh API call),
+ * followed by the surprise rating modal. Falls back to surprise rating only if AI is unavailable.
+ */
+async function openReviewFlow(app: App, plugin: AgentLuhmannPlugin, processor: CaptureProcessor, file: TFile): Promise<void> {
+	const cache = app.metadataCache.getFileCache(file);
+	const aiStatus = getAiStatus(cache);
+
+	const openSurpriseModal = (similarityScore: number | null) => {
+		new SurpriseRatingModal(app, file, async (score) => {
+			await processor.applySurpriseRating(file, score);
+		}, similarityScore).open();
+	};
+
+	const openAiModal = (body: string, result: CaptureResponse) => {
+		new AiFirstPassModal(
+			app,
+			file,
+			body,
+			result,
+			processor.client,
+			async (decision, rewrittenContent) => {
+				await processor.applyAiDecision(file, decision, rewrittenContent, result);
+				openSurpriseModal(result.similarityScore);
+			}
+		).open();
+	};
+
+	if (plugin.settings.aiEnabled && processor.client.isConfigured()) {
+		const rawContent = await app.vault.read(file);
+		const body = rawContent.replace(/^---[\s\S]*?---\n*/, "").trim();
+
+		if (aiStatus.firstPass === "done" && aiStatus.aiRewrittenContent) {
+			// Use stored AI data — no API call
+			const storedResult: CaptureResponse = {
+				rewrittenContent: aiStatus.aiRewrittenContent ?? "",
+				title: aiStatus.aiTitle ?? "",
+				keywords: aiStatus.aiKeywords ?? [],
+				similarityScore: aiStatus.similarityScore ?? 0,
+				similarNotes: [],
+			};
+			openAiModal(body, storedResult);
+			return;
+		}
+
+		// Fetch fresh AI result
+		try {
+			const result = await processor.client.capture(body);
+			if (result) {
+				openAiModal(body, result);
+				return;
+			}
+		} catch {
+			// fall through to surprise modal
+		}
+	}
+
+	openSurpriseModal(aiStatus.similarityScore);
+}
 
 class InboxNoteSuggestModal extends FuzzySuggestModal<TFile> {
+	plugin: AgentLuhmannPlugin;
 	processor: CaptureProcessor;
 
-	constructor(app: App, processor: CaptureProcessor) {
+	constructor(app: App, plugin: AgentLuhmannPlugin, processor: CaptureProcessor) {
 		super(app);
+		this.plugin = plugin;
 		this.processor = processor;
 		this.setPlaceholder("Select an inbox note to rate...");
 		this.setInstructions([
@@ -31,9 +95,7 @@ class InboxNoteSuggestModal extends FuzzySuggestModal<TFile> {
 	}
 
 	onChooseItem(item: TFile): void {
-		new SurpriseRatingModal(this.app, item, async (score) => {
-			await this.processor.applySurpriseRating(item, score);
-		}).open();
+		openReviewFlow(this.app, this.plugin, this.processor, item);
 	}
 }
 
@@ -55,7 +117,7 @@ export function registerCaptureCommands(plugin: AgentLuhmannPlugin, processor: C
 				new Notice("No notes need review right now.");
 				return;
 			}
-			new InboxNoteSuggestModal(plugin.app, processor).open();
+			new InboxNoteSuggestModal(plugin.app, plugin, processor).open();
 		},
 	});
 
@@ -78,9 +140,7 @@ export function registerCaptureCommands(plugin: AgentLuhmannPlugin, processor: C
 				return false;
 			}
 			if (!checking) {
-				new SurpriseRatingModal(plugin.app, activeFile, async (score) => {
-					await processor.applySurpriseRating(activeFile, score);
-				}).open();
+				openReviewFlow(plugin.app, plugin, processor, activeFile);
 			}
 			return true;
 		},
@@ -148,6 +208,14 @@ export function registerCaptureCommands(plugin: AgentLuhmannPlugin, processor: C
 				processor.triggerAiFirstPass(activeFile);
 			}
 			return true;
+		},
+	});
+
+	plugin.addCommand({
+		id: "open-auth-modal",
+		name: "Sign in",
+		callback: () => {
+			new AuthModal(plugin.app, plugin).open();
 		},
 	});
 }

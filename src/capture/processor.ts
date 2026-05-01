@@ -74,7 +74,11 @@ export class CaptureProcessor {
 			const result = await this.client.capture(body);
 
 			if (result) {
-				await setAiStatus(this.fileManager, file, "done", result.similarityScore, "cloudflare");
+				await setAiStatus(
+					this.fileManager, file, "done",
+					result.similarityScore, "cloudflare",
+					result.title, result.keywords, result.rewrittenContent
+				);
 				new Notice("AI first pass complete");
 				this.debugLog("AI first pass complete for:", file.path);
 			} else {

@@ -5,11 +5,13 @@ export class SurpriseRatingModal extends Modal {
 	onSubmit: (score: number) => Promise<void>;
 	selectedScore: number | null = null;
 	confirmButton: HTMLButtonElement | null = null;
+	aiSimilarityScore: number | null;
 
-	constructor(app: App, file: TFile, onSubmit: (score: number) => Promise<void>) {
+	constructor(app: App, file: TFile, onSubmit: (score: number) => Promise<void>, aiSimilarityScore: number | null = null) {
 		super(app);
 		this.file = file;
 		this.onSubmit = onSubmit;
+		this.aiSimilarityScore = aiSimilarityScore;
 	}
 
 	onOpen(): void {
@@ -22,6 +24,15 @@ export class SurpriseRatingModal extends Modal {
 			text: "Does this note shift your understanding?",
 			cls: "surprise-prompt",
 		});
+
+		// AI similarity score badge (if available)
+		if (this.aiSimilarityScore !== null) {
+			const aiInfoEl = contentEl.createDiv({cls: "ai-score-info"});
+			aiInfoEl.createEl("span", {
+				text: `AI similarity score: ${(this.aiSimilarityScore * 100).toFixed(1)}%`,
+				cls: "ai-badge done",
+			});
+		}
 
 		// Note preview
 		const previewEl = contentEl.createDiv({cls: "preview"});

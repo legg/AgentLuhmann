@@ -52,7 +52,8 @@ export async function handleCapture(c: Context): Promise<Response> {
   // 3. Query VectorStore DO for similarity
   const id = env.VECTOR_STORE.idFromName(userId);
   const store = env.VECTOR_STORE.get(id);
-  const similarityScore = await store.scoreSimilarity(embedding);
+  const similarityResult = await store.scoreSimilarity(embedding);
+  const similarityScore = similarityResult.maxScore;
   const topNotes = await store.searchSimilar(embedding, 5);
 
   return c.json({
