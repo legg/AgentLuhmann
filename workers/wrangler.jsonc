@@ -1,0 +1,36 @@
+{
+  "name": "agent-luhmann-api",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.ts",
+  "alias": {
+    "node:module": "./src/polyfills/node-module.ts"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "agent-luhmann-db",
+      "database_id": "fe115f24-e17f-410a-bc38-cb725a4fe0ac"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "VECTOR_STORE",
+        "class_name": "VectorStore"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["VectorStore"]
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "vars": {
+    "BETTER_AUTH_URL": "https://agent-luhmann-api.maxlegg.workers.dev"
+  }
+}

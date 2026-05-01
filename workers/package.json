@@ -1,0 +1,33 @@
+{
+  "name": "agent-luhmann-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker API for AI-powered capture and vector-store-based similarity scoring in AgentLuhmann",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create agent-luhmann-db",
+    "db:migrate:create": "wrangler d1 migrations create agent-luhmann-db",
+    "db:migrate:local": "wrangler d1 migrations apply agent-luhmann-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply agent-luhmann-db --remote",
+    "auth:generate": "printf 'y\n' | npx @better-auth/cli@latest generate --config src/auth/cli-config.ts --output src/auth/schema.ts",
+    "auth:migrate": "npx @better-auth/cli@latest migrate",
+    "seed": "npx tsx scripts/seed-zettels.ts",
+    "test": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "^1.6.9",
+    "better-auth": "^1.2.0",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@better-auth/cli": "^1.2.0",
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "better-sqlite3": "^12.9.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "wrangler": "^3.109.0"
+  }
+}
