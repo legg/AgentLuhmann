@@ -1,3 +1,6 @@
+# Local environment config
+.env
+
 # vscode
 .vscode 
 .claude

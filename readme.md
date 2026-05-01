@@ -8,7 +8,7 @@ AI-powered Zettelkasten for Obsidian.
 ```bash
 npm install
 npm run dev          # watch mode
-npm run build        # production
+OBSIDIAN_VAULT_PATH=/Users/maximus/Documents/obsidian_dev npm run build        # production
 ```
 
 Copy `main.js`, `manifest.json`, and `styles.css` (if any) to:
