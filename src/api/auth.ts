@@ -14,7 +14,10 @@ export async function signUp(baseUrl: string, email: string, password: string, n
 	const params: RequestUrlParam = {
 		url,
 		method: "POST",
-		headers: {"Content-Type": "application/json"},
+		headers: {
+			"Content-Type": "application/json",
+			"Origin": baseUrl,
+		},
 		body: JSON.stringify(payload),
 	};
 
@@ -23,6 +26,7 @@ export async function signUp(baseUrl: string, email: string, password: string, n
 		return response.json as AuthResponse;
 	} catch (error: unknown) {
 		const err = error as { status?: number; message?: string; text?: string };
+		console.error("Sign-up error:", JSON.stringify(err, null, 2));
 		const status = err.status ?? 0;
 		const body = err.text ?? err.message ?? "unknown error";
 		throw new ApiError(`Sign-up failed (${status}): ${body}`, status);
@@ -35,7 +39,10 @@ export async function signIn(baseUrl: string, email: string, password: string): 
 	const params: RequestUrlParam = {
 		url,
 		method: "POST",
-		headers: {"Content-Type": "application/json"},
+		headers: {
+			"Content-Type": "application/json",
+			"Origin": baseUrl,
+		},
 		body: JSON.stringify(payload),
 	};
 
@@ -44,6 +51,7 @@ export async function signIn(baseUrl: string, email: string, password: string): 
 		return response.json as AuthResponse;
 	} catch (error: unknown) {
 		const err = error as { status?: number; message?: string; text?: string };
+		console.error("Sign-in error:", JSON.stringify(err, null, 2));
 		const status = err.status ?? 0;
 		const body = err.text ?? err.message ?? "unknown error";
 		throw new ApiError(`Sign-in failed (${status}): ${body}`, status);
@@ -59,6 +67,7 @@ export async function createApiKey(baseUrl: string, sessionToken: string, name: 
 		headers: {
 			"Content-Type": "application/json",
 			"Authorization": `Bearer ${sessionToken}`,
+			"Origin": baseUrl,
 		},
 		body: JSON.stringify(payload),
 	};
@@ -71,25 +80,5 @@ export async function createApiKey(baseUrl: string, sessionToken: string, name: 
 		const status = err.status ?? 0;
 		const body = err.text ?? err.message ?? "unknown error";
 		throw new ApiError(`API key creation failed (${status}): ${body}`, status);
-	}
-}
-
-export async function verifyApiKey(baseUrl: string, apiKey: string): Promise<{ valid: boolean; userId: string; apiKey: string } | null> {
-	const url = `${baseUrl}/api/auth/api-key/verify`;
-	const params: RequestUrlParam = {
-		url,
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${apiKey}`,
-		},
-		body: JSON.stringify({key: apiKey}),
-	};
-
-	try {
-		const response = await requestUrl(params);
-		return response.json as { valid: boolean; userId: string; apiKey: string };
-	} catch {
-		return null;
 	}
 }

@@ -14,7 +14,7 @@ const app = new Hono();
 app.use("/api/*", cors({
   origin: "*",
   allowHeaders: ["Content-Type", "Authorization"],
-  allowMethods: ["POST", "GET", "OPTIONS"],
+  allowMethods: ["POST", "GET", "DELETE", "OPTIONS"],
   credentials: true,
 }));
 

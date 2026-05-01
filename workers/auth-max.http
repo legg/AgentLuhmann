@@ -1,0 +1,71 @@
+@baseUrl = https://agent-luhmann-api.maxlegg.workers.dev
+
+### Sign up
+POST {{baseUrl}}/api/auth/sign-up/email
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "email": "max@example.com",
+  "password": "password123",
+  "name": "Max User"
+}
+
+### Sign in
+POST {{baseUrl}}/api/auth/sign-in/email
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "email": "max@example.com",
+  "password": "password123"
+}
+
+### Create API key (use session token from sign-in/sign-up response)
+POST {{baseUrl}}/api/auth/api-key/create
+Content-Type: application/json
+Authorization: Bearer {{sessionToken}}
+Origin: {{baseUrl}}
+
+{
+  "name": "obsidian-plugin"
+}
+
+### Capture (protected)
+POST {{baseUrl}}/api/capture
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+Origin: {{baseUrl}}
+
+{
+  "content": "This is a test note about machine learning and neural networks."
+}
+
+### Similarity (protected)
+POST {{baseUrl}}/api/similarity
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+Origin: {{baseUrl}}
+
+{
+  "content": "This is a test note about machine learning and neural networks."
+}
+
+### Vector store sync (protected)
+POST {{baseUrl}}/api/vector-store/sync
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+Origin: {{baseUrl}}
+
+{
+  "notes": [
+    {
+      "id": "01_Zettels/test-note.md",
+      "path": "01_Zettels/test-note.md",
+      "content": "A zettel about artificial intelligence."
+    }
+  ]
+}
+
+### Health check
+GET {{baseUrl}}/
