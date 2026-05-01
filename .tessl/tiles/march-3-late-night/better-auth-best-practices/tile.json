@@ -1,0 +1,11 @@
+{
+  "name": "march-3-late-night/better-auth-best-practices",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Configure Better Auth server and client, set up database adapters, manage sessions, add plugins, and handle environment variables. Use when users mention Better Auth, betterauth, auth.ts, or need to set up TypeScript authentication with email/password, OAuth, or plugin configuration.",
+  "skills": {
+    "better-auth-best-practices": {
+      "path": "SKILL.md"
+    }
+  }
+}
