@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { apiKey } from "@better-auth/api-key";
+import { bearer } from "better-auth/plugins/bearer";
 
 export interface Env {
   DB: D1Database;
@@ -15,7 +16,7 @@ export function createAuth(env: Env) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     emailAndPassword: { enabled: true },
-    plugins: [apiKey()],
+    plugins: [apiKey(), bearer()],
     rateLimit: {
       enabled: true,
       window: 60,

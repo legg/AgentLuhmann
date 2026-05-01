@@ -22,12 +22,12 @@ export class VectorStore extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ctx.blockConcurrencyWhile(async () => {
-      await this.sql.exec(`
+      this.ctx.storage.sql.exec(`
         CREATE TABLE IF NOT EXISTS zettels (
           id TEXT PRIMARY KEY,
           vault_path TEXT NOT NULL,
           content TEXT NOT NULL,
-          embedding BLOB NOT NULL,
+          embedding TEXT NOT NULL,
           created_at TEXT,
           updated_at TEXT
         );
@@ -43,47 +43,53 @@ export class VectorStore extends DurableObject<Env> {
     embedding: number[]
   ): Promise<void> {
     const now = new Date().toISOString();
-    await this.ctx.storage.sql`
-      INSERT INTO zettels (id, vault_path, content, embedding, created_at, updated_at)
-      VALUES (${id}, ${vaultPath}, ${content}, ${JSON.stringify(embedding)}, ${now}, ${now})
-      ON CONFLICT(id) DO UPDATE SET
-        vault_path = excluded.vault_path,
-        content = excluded.content,
-        embedding = excluded.embedding,
-        updated_at = excluded.updated_at;
-    `;
+    this.ctx.storage.sql.exec(
+      `INSERT INTO zettels (id, vault_path, content, embedding, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         vault_path = excluded.vault_path,
+         content = excluded.content,
+         embedding = excluded.embedding,
+         updated_at = excluded.updated_at`,
+      id, vaultPath, content, JSON.stringify(embedding), now, now
+    );
   }
 
   async removeNote(id: string): Promise<void> {
-    await this.ctx.storage.sql`
-      DELETE FROM zettels WHERE id = ${id};
-    `;
+    this.ctx.storage.sql.exec(`DELETE FROM zettels WHERE id = ?`, id);
   }
 
   async listNotes(): Promise<string[]> {
-    const rows = await this.ctx.storage.sql`
-      SELECT id FROM zettels;
-    `;
-    return rows.map((r: any) => r.id as string);
+    const cursor = this.ctx.storage.sql.exec<{ id: string }>(
+      `SELECT id FROM zettels`
+    );
+    return cursor.toArray().map((r) => r.id);
   }
 
-  async searchSimilar(embedding: number[], topK = 5): Promise<NoteRecord[]> {
-    const rows = await this.ctx.storage.sql`
-      SELECT id, vault_path, content, embedding, created_at, updated_at FROM zettels;
-    `;
-    const scored = (rows as any[]).map((row) => {
+  async searchSimilar(embedding: number[], topK = 5): Promise<(NoteRecord & { score: number })[]> {
+    const cursor = this.ctx.storage.sql.exec<{
+      id: string;
+      vault_path: string;
+      content: string;
+      embedding: string;
+      created_at: string;
+      updated_at: string;
+    }>(`SELECT id, vault_path, content, embedding, created_at, updated_at FROM zettels`);
+
+    const scored = cursor.toArray().map((row) => {
       const storedEmbedding: number[] = JSON.parse(row.embedding);
       const score = cosineSimilarity(embedding, storedEmbedding);
       return {
-        id: row.id as string,
-        vault_path: row.vault_path as string,
-        content: row.content as string,
+        id: row.id,
+        vault_path: row.vault_path,
+        content: row.content,
         embedding: storedEmbedding,
-        created_at: row.created_at as string,
-        updated_at: row.updated_at as string,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
         score,
       };
     });
+
     scored.sort((a, b) => b.score - a.score);
     return scored.slice(0, topK);
   }
@@ -93,16 +99,20 @@ export class VectorStore extends DurableObject<Env> {
     avgScore: number;
     count: number;
   }> {
-    const rows = await this.ctx.storage.sql`
-      SELECT embedding FROM zettels;
-    `;
+    const cursor = this.ctx.storage.sql.exec<{ embedding: string }>(
+      `SELECT embedding FROM zettels`
+    );
+    const rows = cursor.toArray();
+
     if (rows.length === 0) {
       return { maxScore: 0, avgScore: 0, count: 0 };
     }
-    const scores = (rows as any[]).map((row) => {
+
+    const scores = rows.map((row) => {
       const storedEmbedding: number[] = JSON.parse(row.embedding);
       return cosineSimilarity(embedding, storedEmbedding);
     });
+
     const maxScore = Math.max(...scores);
     const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { maxScore, avgScore, count: scores.length };
@@ -114,20 +124,19 @@ export class VectorStore extends DurableObject<Env> {
     const now = new Date().toISOString();
     const incomingIds = new Set(notes.map((n) => n.id));
 
-    // Upsert all incoming notes
     for (const note of notes) {
-      await this.ctx.storage.sql`
-        INSERT INTO zettels (id, vault_path, content, embedding, created_at, updated_at)
-        VALUES (${note.id}, ${note.path}, ${note.content}, ${JSON.stringify(note.embedding)}, ${now}, ${now})
-        ON CONFLICT(id) DO UPDATE SET
-          vault_path = excluded.vault_path,
-          content = excluded.content,
-          embedding = excluded.embedding,
-          updated_at = excluded.updated_at;
-      `;
+      this.ctx.storage.sql.exec(
+        `INSERT INTO zettels (id, vault_path, content, embedding, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           vault_path = excluded.vault_path,
+           content = excluded.content,
+           embedding = excluded.embedding,
+           updated_at = excluded.updated_at`,
+        note.id, note.path, note.content, JSON.stringify(note.embedding), now, now
+      );
     }
 
-    // Remove notes not in the incoming list
     const existingIds = await this.listNotes();
     const removedIds = existingIds.filter((id) => !incomingIds.has(id));
     for (const id of removedIds) {
@@ -143,9 +152,9 @@ function cosineSimilarity(a: number[], b: number[]): number {
   let normA = 0;
   let normB = 0;
   for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+    dot += (a[i] ?? 0) * (b[i] ?? 0);
+    normA += (a[i] ?? 0) * (a[i] ?? 0);
+    normB += (b[i] ?? 0) * (b[i] ?? 0);
   }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-8);
 }

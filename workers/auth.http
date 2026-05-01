@@ -1,8 +1,7 @@
 @baseUrl = https://agent-luhmann-api.maxlegg.workers.dev
-@sessionToken = PASTE_TOKEN_HERE
-@apiKey = PASTE_KEY_HERE
 
 ### 1. Sign up
+# @name signUp
 POST {{baseUrl}}/api/auth/sign-up/email
 Content-Type: application/json
 Origin: {{baseUrl}}
@@ -13,7 +12,8 @@ Origin: {{baseUrl}}
   "name": "Test User"
 }
 
-### 2. Sign in (copy the "token" value from response into @sessionToken above)
+### 2. Sign in
+# @name signIn
 POST {{baseUrl}}/api/auth/sign-in/email
 Content-Type: application/json
 Origin: {{baseUrl}}
@@ -23,40 +23,41 @@ Origin: {{baseUrl}}
   "password": "password123"
 }
 
-### 3. Create API key (copy the "key" value from response into @apiKey above)
+### 3. Create API key
+# @name createApiKey
 POST {{baseUrl}}/api/auth/api-key/create
 Content-Type: application/json
-Authorization: Bearer {{sessionToken}}
+Authorization: Bearer {{signIn.response.body.$.token}}
 Origin: {{baseUrl}}
 
 {
   "name": "obsidian-plugin"
 }
 
-### 4. Capture (uses @apiKey)
+### 4. Capture (uses API key from step 3)
 POST {{baseUrl}}/api/capture
 Content-Type: application/json
-Authorization: Bearer {{apiKey}}
+Authorization: Bearer {{createApiKey.response.body.$.key}}
 Origin: {{baseUrl}}
 
 {
   "content": "This is a test note about machine learning and neural networks."
 }
 
-### 5. Similarity (uses @apiKey)
+### 5. Similarity (uses API key from step 3)
 POST {{baseUrl}}/api/similarity
 Content-Type: application/json
-Authorization: Bearer {{apiKey}}
+Authorization: Bearer {{createApiKey.response.body.$.key}}
 Origin: {{baseUrl}}
 
 {
   "content": "This is a test note about machine learning and neural networks."
 }
 
-### 6. Vector store sync (uses @apiKey)
+### 6. Vector store sync (uses API key from step 3)
 POST {{baseUrl}}/api/vector-store/sync
 Content-Type: application/json
-Authorization: Bearer {{apiKey}}
+Authorization: Bearer {{createApiKey.response.body.$.key}}
 Origin: {{baseUrl}}
 
 {

@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import type { Env } from "../auth/index.js";
-import { createAuth } from "../auth/index.js";
 
 export async function handleCapture(c: Context): Promise<Response> {
   const env = c.env as Env;
