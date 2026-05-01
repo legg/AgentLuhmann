@@ -81,3 +81,195 @@
 .agent-luhmann-surprise-modal .rating-label-right {
 	text-align: right;
 }
+
+/* Auth modal */
+
+.agent-luhmann-auth-modal .auth-tabs {
+	display: flex;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-4);
+}
+
+.agent-luhmann-auth-modal .auth-tab {
+	min-width: 44px;
+	min-height: 44px;
+	padding: var(--size-4-1) var(--size-4-3);
+	border-radius: var(--radius-m);
+	background: var(--background-primary-alt);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.agent-luhmann-auth-modal .auth-tab:hover {
+	background: var(--background-modifier-hover);
+}
+
+.agent-luhmann-auth-modal .auth-tab:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.agent-luhmann-auth-modal .auth-tab.active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.agent-luhmann-auth-modal .auth-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+}
+
+.agent-luhmann-auth-modal .auth-form input {
+	width: 100%;
+	min-height: 44px;
+	padding: var(--size-4-1) var(--size-4-2);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	font-size: var(--font-ui-small);
+}
+
+.agent-luhmann-auth-modal .auth-form input:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.agent-luhmann-auth-modal .auth-form button {
+	min-width: 44px;
+	min-height: 44px;
+	padding: var(--size-4-1) var(--size-4-3);
+	border-radius: var(--radius-m);
+	cursor: pointer;
+}
+
+.agent-luhmann-auth-modal .auth-form button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+/* AI first pass modal */
+
+.agent-luhmann-ai-modal .ai-info {
+	margin-bottom: var(--size-4-3);
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	align-items: center;
+}
+
+.agent-luhmann-ai-modal .ai-badge {
+	display: inline-block;
+	padding: var(--size-4-1) var(--size-4-2);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+}
+
+.agent-luhmann-ai-modal .ai-badge.done {
+	background: var(--background-modifier-success);
+	color: var(--text-success);
+}
+
+.agent-luhmann-ai-modal .ai-badge.pending {
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+}
+
+.agent-luhmann-ai-modal .ai-badge.failed {
+	background: var(--background-modifier-error);
+	color: var(--text-error);
+}
+
+.agent-luhmann-ai-modal .ai-similar-notes {
+	margin-top: var(--size-4-2);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.agent-luhmann-ai-modal .ai-similar-notes ul {
+	margin: var(--size-4-1) 0;
+	padding-left: var(--size-4-4);
+}
+
+.agent-luhmann-ai-modal .ai-similar-notes li {
+	margin-bottom: var(--size-4-1);
+}
+
+.agent-luhmann-ai-modal .ai-keywords,
+.agent-luhmann-ai-modal .ai-title {
+	margin-bottom: var(--size-4-2);
+	font-size: var(--font-ui-small);
+}
+
+.agent-luhmann-ai-modal .ai-diff-container {
+	display: flex;
+	gap: var(--size-4-3);
+	margin-bottom: var(--size-4-4);
+}
+
+.agent-luhmann-ai-modal .ai-diff-column {
+	flex: 1;
+	min-width: 0;
+}
+
+.agent-luhmann-ai-modal .ai-diff-column h3 {
+	font-size: var(--font-ui-small);
+	margin-bottom: var(--size-4-1);
+	color: var(--text-muted);
+}
+
+.agent-luhmann-ai-modal .ai-diff-content {
+	background: var(--background-secondary);
+	padding: var(--size-4-3);
+	border-radius: var(--radius-m);
+	max-height: 300px;
+	overflow-y: auto;
+	font-size: var(--font-ui-smaller);
+	font-family: var(--font-monospace);
+	color: var(--text-normal);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons {
+	display: flex;
+	gap: var(--size-4-2);
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons button {
+	min-width: 44px;
+	min-height: 44px;
+	padding: var(--size-4-1) var(--size-4-3);
+	border-radius: var(--radius-m);
+	background: var(--background-primary-alt);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons button:hover {
+	background: var(--background-modifier-hover);
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons button.mod-cta {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.agent-luhmann-ai-modal .ai-action-buttons button.mod-cta:hover {
+	opacity: 0.9;
+}

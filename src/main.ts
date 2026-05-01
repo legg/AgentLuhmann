@@ -5,38 +5,45 @@ import {registerCaptureCommands} from "./capture/commands";
 import {registerCaptureEvents} from "./capture/events";
 import {ensureFolderExists} from "./utils/paths";
 import {ensureTemplateExists} from "./capture/template";
+import {AiApiClient} from "./api/client";
+import {AuthModal} from "./ui/auth-modal";
 
 export default class AgentLuhmannPlugin extends Plugin {
 	settings!: AgentLuhmannSettings;
 	processor!: CaptureProcessor;
+	client!: AiApiClient;
 
 	async onload() {
 		await this.loadSettings();
 
-		// Ensure required folders exist
+		this.client = new AiApiClient(
+			this.settings.aiApiUrl,
+			this.settings.authToken,
+			this.settings.aiEnabled,
+		);
+
 		await ensureFolderExists(this.app.vault, this.settings.inboxPath);
 		await ensureFolderExists(this.app.vault, this.settings.archivePath);
 		await ensureFolderExists(this.app.vault, this.settings.templatesPath);
+		await ensureFolderExists(this.app.vault, this.settings.zettelsPath);
 		await ensureTemplateExists(this.app.vault, this.settings.templatesPath);
 
-		// Initialize processor
 		this.processor = new CaptureProcessor(
+			this.app,
 			this.app.vault,
 			this.app.fileManager,
 			this.app.metadataCache,
-			this.settings
+			this.settings,
+			this.client,
 		);
 
-		// Register commands and events
 		registerCaptureCommands(this, this.processor);
 		registerCaptureEvents(this, this.processor, this.settings.autoPromptOnOpen);
 
-		// Settings tab
 		this.addSettingTab(new AgentLuhmannSettingTab(this.app, this));
 	}
 
 	onunload() {
-		// Cleanup handled by register* methods
 	}
 
 	async loadSettings() {
@@ -45,10 +52,18 @@ export default class AgentLuhmannPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		// Update processor settings reference
 		if (this.processor) {
 			this.processor.settings = this.settings;
 			this.processor.debugLog = this.settings.enableDebugLogging ? console.log : () => {};
 		}
+		if (this.client) {
+			this.client.baseUrl = this.settings.aiApiUrl;
+			this.client.authToken = this.settings.authToken;
+			this.client.aiEnabled = this.settings.aiEnabled;
+		}
+	}
+
+	openAuthModal(): void {
+		new AuthModal(this.app, this).open();
 	}
 }

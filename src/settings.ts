@@ -9,6 +9,13 @@ export interface AgentLuhmannSettings {
 	surpriseThreshold: number;
 	autoPromptOnOpen: boolean;
 	enableDebugLogging: boolean;
+	zettelsPath: string;
+	aiEnabled: boolean;
+	aiApiUrl: string;
+	autoAiFirstPass: boolean;
+	authToken: string;
+	userEmail: string;
+	isAuthenticated: boolean;
 }
 
 export const DEFAULT_SETTINGS: AgentLuhmannSettings = {
@@ -19,6 +26,13 @@ export const DEFAULT_SETTINGS: AgentLuhmannSettings = {
 	surpriseThreshold: 3,
 	autoPromptOnOpen: true,
 	enableDebugLogging: false,
+	zettelsPath: "01_Zettels",
+	aiEnabled: false,
+	aiApiUrl: "",
+	autoAiFirstPass: true,
+	authToken: "",
+	userEmail: "",
+	isAuthenticated: false,
 };
 
 export class AgentLuhmannSettingTab extends PluginSettingTab {
@@ -67,6 +81,17 @@ export class AgentLuhmannSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.templatesPath)
 				.onChange(async (value) => {
 					this.plugin.settings.templatesPath = value.trim();
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("Zettels folder path")
+			.setDesc("Folder where promoted zettel notes are stored.")
+			.addText(text => text
+				.setPlaceholder("01_Zettels")
+				.setValue(this.plugin.settings.zettelsPath)
+				.onChange(async (value) => {
+					this.plugin.settings.zettelsPath = value.trim();
 					await this.plugin.saveSettings();
 				}));
 
@@ -120,6 +145,60 @@ export class AgentLuhmannSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableDebugLogging = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("AI integration")
+			.setHeading();
+
+		new Setting(containerEl)
+			.setName("Enable AI features")
+			.setDesc("Connect to an AI service for first-pass rewriting and similarity scoring.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.aiEnabled)
+				.onChange(async (value) => {
+					this.plugin.settings.aiEnabled = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("AI API URL")
+			.setDesc("Base URL of the AI service (e.g. https://your-api.workers.dev).")
+			.addText(text => text
+				.setPlaceholder("https://your-api.workers.dev")
+				.setValue(this.plugin.settings.aiApiUrl)
+				.onChange(async (value) => {
+					this.plugin.settings.aiApiUrl = value.trim();
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("Auto AI first pass")
+			.setDesc("Automatically run AI first pass when capturing a new fleeting note.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoAiFirstPass)
+				.onChange(async (value) => {
+					this.plugin.settings.autoAiFirstPass = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("Authentication status")
+			.setDesc(this.plugin.settings.isAuthenticated
+				? `Signed in as ${this.plugin.settings.userEmail}`
+				: "Not signed in")
+			.addButton(button => button
+				.setButtonText(this.plugin.settings.isAuthenticated ? "Sign out" : "Sign in")
+				.onClick(() => {
+					if (this.plugin.settings.isAuthenticated) {
+						this.plugin.settings.authToken = "";
+						this.plugin.settings.isAuthenticated = false;
+						this.plugin.settings.userEmail = "";
+						this.plugin.saveSettings();
+						this.display();
+					} else {
+						this.plugin.openAuthModal();
+					}
 				}));
 	}
 }

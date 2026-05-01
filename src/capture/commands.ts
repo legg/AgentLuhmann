@@ -3,6 +3,10 @@ import {CaptureProcessor} from "./processor";
 import {CaptureModal} from "./capture-modal";
 import {SurpriseRatingModal} from "./surprise-modal";
 import {isInInbox} from "../utils/paths";
+import {AuthModal} from "../ui/auth-modal";
+import AgentLuhmannPlugin from "../main";
+import {syncVectorStore} from "../vector-store/sync";
+import {getAiStatus} from "./ai-status";
 
 class InboxNoteSuggestModal extends FuzzySuggestModal<TFile> {
 	processor: CaptureProcessor;
@@ -33,7 +37,7 @@ class InboxNoteSuggestModal extends FuzzySuggestModal<TFile> {
 	}
 }
 
-export function registerCaptureCommands(plugin: Plugin, processor: CaptureProcessor): void {
+export function registerCaptureCommands(plugin: AgentLuhmannPlugin, processor: CaptureProcessor): void {
 	plugin.addCommand({
 		id: "capture-fleeting-note",
 		name: "Capture fleeting note",
@@ -77,6 +81,71 @@ export function registerCaptureCommands(plugin: Plugin, processor: CaptureProces
 				new SurpriseRatingModal(plugin.app, activeFile, async (score) => {
 					await processor.applySurpriseRating(activeFile, score);
 				}).open();
+			}
+			return true;
+		},
+	});
+
+	plugin.addCommand({
+		id: "sign-in-ai",
+		name: "Sign in to AI",
+		callback: () => {
+			plugin.openAuthModal();
+		},
+	});
+
+	plugin.addCommand({
+		id: "sign-out-ai",
+		name: "Sign out of AI",
+		callback: () => {
+			plugin.settings.authToken = "";
+			plugin.settings.isAuthenticated = false;
+			plugin.settings.userEmail = "";
+			plugin.saveSettings();
+			new Notice("Signed out of AI");
+		},
+	});
+
+	plugin.addCommand({
+		id: "sync-vector-store",
+		name: "Sync vector store",
+		callback: () => {
+			syncVectorStore(plugin.app.vault, plugin.app.metadataCache, processor.client, plugin.settings.zettelsPath);
+		},
+	});
+
+	plugin.addCommand({
+		id: "promote-to-zettel",
+		name: "Promote to zettel",
+		checkCallback: (checking: boolean) => {
+			const activeFile = plugin.app.workspace.getActiveFile();
+			if (!activeFile) {
+				return false;
+			}
+			const status = processor.getNoteStatus(activeFile);
+			if (status.status !== "needs-processing" && status.status !== "captured") {
+				return false;
+			}
+			if (!checking) {
+				processor.promoteToZettel(activeFile);
+			}
+			return true;
+		},
+	});
+
+	plugin.addCommand({
+		id: "force-ai-first-pass",
+		name: "Force AI first pass",
+		checkCallback: (checking: boolean) => {
+			const activeFile = plugin.app.workspace.getActiveFile();
+			if (!activeFile) {
+				return false;
+			}
+			if (!processor.client.isConfigured()) {
+				return false;
+			}
+			if (!checking) {
+				processor.triggerAiFirstPass(activeFile);
 			}
 			return true;
 		},
