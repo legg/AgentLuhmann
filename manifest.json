@@ -1,0 +1,9 @@
+{
+  "id": "agent-luhmann",
+  "name": "Agent Luhmann",
+  "version": "0.0.1",
+  "minAppVersion": "0.15.0",
+  "description": "An Obsidian plugin inspired by Niklas Luhmann's Zettelkasten methodology, powered by AI agents.",
+  "author": "",
+  "isDesktopOnly": false
+}
